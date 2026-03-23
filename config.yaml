@@ -1,0 +1,202 @@
+project:
+  cache_dir: ".cache"
+  output_dir: "output"
+  assets_dir: "assets"
+  raw_clip_dir: "output/raw_segments"
+  channels_file: "data/source_channels.txt"
+  downloads_dir: ".downloads"
+
+video_processing:
+  target_clips_count: "20-30"
+  target_total_duration: "900-1500"
+  min_clip_duration: 40
+  max_clip_duration: 65
+  overlap_removal_threshold: 2.0
+  anticipation_seconds: 8.0
+  payoff_seconds: 36.0
+  anchor_merge_window: 4.0
+  max_candidates_per_chunk: 25
+  max_selected_clips_per_video: 1
+  thumbnail_offset_ratio: 0.4
+  short_video_minutes_threshold: 30
+  minimum_scaled_clips: 6
+
+scoring_weights:
+  audio_peak: 20
+  motion_peak: 20
+  emotional_phrase: 30
+  exclamation: 15
+  scene_change: 10
+  face_emotion: 25
+  optimal_length: 10
+  subtitle_hook: 24
+  dialogue_density: 8
+  diversity_penalty: 6
+  repeated_chunk_penalty: 4
+
+cliffhanger:
+  intriguing_words:
+    - "secret"
+    - "truth"
+    - "shock"
+    - "killer"
+    - "look"
+    - "watch"
+    - "listen"
+    - "wait"
+    - "no way"
+    - "seriously"
+  cut_before_word: 0.2
+  cut_after_punchline: 0.3
+  pause_window: 0.6
+
+performance:
+  motion_frame_step: 5
+  scene_frame_step: 5
+  face_sample_seconds: 2.0
+  chunk_duration: 300
+  cpu_chunk_duration: 120
+  parallel_workers: 2
+  use_gpu_whisper: false
+  whisper_model: "small"
+  cpu_whisper_model: "tiny"
+  whisper_compute_type: "int8"
+  cpu_whisper_compute_type: "int8"
+  audio_sample_rate: 16000
+  max_gpu_workers: 2
+  max_cpu_workers: 2
+  preload_whisper: true
+  fast_cpu_visual_mode: true
+  use_visual_proxy_on_cpu: true
+  cpu_visual_proxy_fps: 1.0
+  cpu_visual_proxy_crf: 38
+  proxy_low_fps_threshold: 4.5
+  cpu_text_first_mode: true
+  skip_motion_on_cpu: true
+  skip_scene_on_cpu: true
+  cpu_motion_frame_step: 24
+  cpu_scene_frame_step: 24
+  cpu_face_sample_seconds: 4.0
+  skip_face_on_cpu: true
+  stage_progress: true
+
+audio:
+  peak_prominence: 0.18
+  loud_window_seconds: 1.5
+  quiet_window_seconds: 2.5
+  min_peak_distance_seconds: 1.1
+  ignore_below_percentile: 55
+
+motion:
+  resize_width: 320
+  cpu_resize_width: 128
+  flow_peak_prominence: 0.18
+  light_change_prominence: 0.2
+  min_peak_distance_seconds: 1.0
+
+scenes:
+  histogram_bins: 32
+  cpu_resize_width: 128
+  cpu_resize_height: 72
+  cut_threshold: 0.52
+  min_scene_gap_seconds: 1.2
+
+text:
+  language: null
+  beam_size: 5
+  vad_filter: true
+  condition_on_previous_text: false
+  subtitle_interest_threshold: 0.52
+  emotional_dictionary:
+    "no": 0.9
+    "stop": 0.9
+    "run": 1.0
+    "look": 1.0
+    "secret": 1.0
+    "truth": 0.8
+    "killer": 1.0
+    "wait": 0.9
+    "please": 0.6
+    "quick": 0.6
+    "listen": 0.8
+    "seriously": 0.8
+  punchline_max_words: 9
+  punchline_pause_seconds: 0.6
+
+faces:
+  enabled: true
+  detector_backend: "opencv"
+  min_face_confidence: 0.25
+  dominant_emotions:
+    surprise: 1.0
+    angry: 0.9
+    happy: 0.75
+    fear: 1.0
+    sad: 0.55
+    neutral: 0.25
+
+montage:
+  width: 1080
+  height: 1920
+  blur_strength: 20
+  foreground_margin: 0.9
+  subtitle_font: "Arial"
+  subtitle_font_size: 68
+  subtitle_margin_bottom: 210
+  subtitle_primary_color: "&H00FFFFFF"
+  subtitle_secondary_color: "&H0000A5FF"
+  music_volume: 0.18
+  keep_raw_segments: true
+
+watermark:
+  enabled: false
+  path: null
+  scale_width: 180
+  margin_right: 48
+  margin_top: 60
+
+youtube:
+  enabled: true
+  videos_per_channel: 2
+  channel_search_max_results: 20
+  channel_min_duration_seconds: 300
+  channel_max_duration_seconds: 10800
+  channel_query_target_minutes: 28
+  channel_query_duration_spread: 22
+  randomize_channel_order: true
+  randomize_video_order: true
+  random_candidate_pool_multiplier: 4
+  random_candidate_pool_min_size: 8
+  random_seed: null
+  search_prefix: "ytsearch"
+  target_height: 1080
+  language_priority:
+    - "en"
+    - "ru"
+    - "uk"
+  prefer_keywords:
+    - "full episode"
+    - "full video"
+    - "best moments"
+  avoid_keywords:
+    - "trailer"
+    - "teaser"
+    - "review"
+    - "reaction"
+    - "shorts"
+    - "clip"
+    - "music video"
+    - "stream"
+    - "live"
+    - "podcast"
+  clickbait_keywords:
+    - "shocking"
+    - "unbelievable"
+    - "mind blowing"
+    - "must watch"
+    - "watch until the end"
+    - "crazy"
+  preferred_channel_keywords:
+    - "official"
+  download_subtitles: false
+  write_info_json: true
