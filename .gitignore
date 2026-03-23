@@ -1,0 +1,9 @@
+.cache/
+.downloads/
+output/*
+!output/.gitkeep
+__pycache__/
+*/__pycache__/
+*.pyc
+*.pyo
+*.pyd
