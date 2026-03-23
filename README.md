@@ -1,7 +1,6 @@
-TTM - TikTok Media
-Discord - teewrlds
-Telegram - @souptee
-Created by Soup / DJ DALBAEB
+TTM - TikTok Media |
+Discord - teewrlds |
+Telegram - @souptee |
 
 Overview
 
