@@ -1,8 +1,0 @@
-.cache/
-.downloads/
-output/
-node_modules/
-frontend/dist/
-__pycache__/
-*.pyc
-*.pkl
