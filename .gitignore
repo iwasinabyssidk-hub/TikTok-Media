@@ -2,8 +2,44 @@
 .downloads/
 output/*
 !output/.gitkeep
-__pycache__/
-*/__pycache__/
+# Backend generated artifacts
+backend/output/
+backend/output/*
+backend/.cache/
+backend/.downloads/
+backend/*.log
+backend/**/*.log
+
+# Python
+venv/
+.venv/
+env/
+.env
+.env.*
 *.pyc
 *.pyo
 *.pyd
+*.egg-info/
+*.sqlite3
+*.db
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+__pycache__/
+*/__pycache__/
+
+# Node / frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/.env.*
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

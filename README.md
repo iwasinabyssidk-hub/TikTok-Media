@@ -1,106 +1,184 @@
-TTM - TikTok Media |
-Discord - teewrlds |
-Telegram - @souptee |
+# TTM - TikTok Media
 
-Overview
+TTM (TikTok Media) - это система для автоматической нарезки вертикальных клипов из длинных YouTube-видео с веб-интерфейсом, REST API и live-логами через WebSocket.
 
-TTM is a Python tool for building vertical short-form clips from long YouTube videos.
+Репозиторий разделен на два слоя:
 
-Current repository scope:
-- channel-list workflow only
-- one best clip per source video
-- subtitle-first ranking on CPU
-- vertical output with subtitles and a source title overlay
+- `backend/` - FastAPI-приложение, которое запускает пайплайн обработки, управляет заданиями и отдает клипы.
+- `frontend/` - React + Vite интерфейс для запуска задач, мониторинга прогресса и просмотра результатов.
 
-Main Flow
+---
 
-1. Read channels from `data/source_channels.txt`
-2. Search YouTube for long-form videos from those channels
-3. Download selected source videos
-4. Analyze subtitles and audio
-5. Pick the strongest highlight from each source video
-6. Render a vertical clip into `output/`
+## Что умеет проект
 
-Features
+- запуск задач генерации клипов по списку YouTube-каналов;
+- фоновая обработка и отслеживание статуса задач (`queued`, `running`, `completed`, `failed`, `cancelled`);
+- просмотр логов в реальном времени через WebSocket;
+- просмотр созданных клипов и миниатюр в галерее;
+- редактирование ключевых параметров `config.yaml` из UI.
 
-- single launcher: `python main.py`
-- random channel order
-- random video order
-- one best clip per source video
-- subtitle-first selection
-- vertical 1080x1920 montage
-- animated subtitles
-- source video title shown above the clip
+---
 
-Installation
+## Архитектура
 
-Requirements:
-- Python 3.11+
-- ffmpeg
-- dependencies from `requirements.txt`
+### Backend (`backend/`)
 
-Install:
-`pip install -r requirements.txt`
+Основа: `FastAPI + ThreadPoolExecutor`.
 
-Usage
+Ключевые роли:
 
-Run:
-`python main.py`
+- API-слой (`backend/app/api/routes/*`) - маршруты `jobs`, `clips`, `config`;
+- запуск пайплайна (`backend/app/core/job_runner.py`) - выполнение TTM-процессинга в фоне;
+- менеджер задач (`backend/app/core/job_manager.py`) - хранение состояния задач в памяти;
+- WebSocket (`backend/app/api/websocket.py`) - стрим логов и прогресса на страницу задачи;
+- статическая раздача артефактов - `/output/*` монтируется из каталога `output/`.
 
-The launcher asks for:
-- minimum clip length
-- maximum clip length
-- how many channels to process
-- default videos per channel
-- per-channel overrides
+### Frontend (`frontend/`)
 
-Optional CLI arguments:
-- `--config config.yaml`
-- `--channels-file data/source_channels.txt`
-- `--output output`
-- `--channels-limit 3`
-- `--videos-per-channel 2`
-- `--min-clip 40`
-- `--max-clip 65`
+Основа: `React 19 + TypeScript + Vite + TanStack Query + Tailwind`.
 
-Channel Input File
+Основные страницы:
 
-File:
-`data/source_channels.txt`
+- `Dashboard` - сводка и активные задачи;
+- `Jobs` - создание задач и таблица всех запусков;
+- `JobDetail` - прогресс, live-логи, клипы конкретной задачи;
+- `ClipsGallery` - единая галерея клипов по завершенным задачам;
+- `Settings` - редактирование частей `config.yaml` через API.
 
-Supported entries:
-- channel name
-- `@handle`
-- full YouTube channel URL
+В `vite` настроен proxy:
 
-Output
+- `/api -> http://localhost:8000`
+- `/ws -> ws://localhost:8000`
+- `/output -> http://localhost:8000`
 
-Each run creates a folder like:
-`output/channels1_MM-DD/`
+---
 
-Inside:
-- channel folders
-- source video folders
-- `clips/clip_01.mp4`
-- `thumbnails/`
-- `report.json`
-- `youtube_batch_report.json`
+## Требования
 
-Project Structure
+- Python `3.11+`
+- Node.js `18+` (рекомендуется `20+`)
+- `ffmpeg` в `PATH`
 
-- `main.py` - launcher
-- `config.yaml` - configuration
-- `data/source_channels.txt` - source channels
-- `core/` - analyzers and ranking
-- `processing/` - batch processing and rendering
-- `utils/` - ffmpeg, cache, and YouTube helpers
-- `assets/` - optional assets
-- `output/` - generated results
+---
 
-GitHub Notes
+## Быстрый старт
 
-This repository is prepared for publishing:
-- `.cache/` is ignored
-- `.downloads/` is ignored
-- `output/` is ignored except `.gitkeep`
-- `__pycache__/` is ignored
+### 1) Backend
+
+```bash
+cd backend
+pip install -r requirements.txt
+python main.py
+```
+
+API будет доступен на `http://localhost:8000`.
+
+### 2) Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+UI будет доступен на `http://localhost:5173`.
+
+---
+
+## REST API
+
+Базовый префикс: `/api`.
+
+### Health
+
+- `GET /api/health` - проверка доступности backend.
+
+### Jobs
+
+- `POST /api/jobs` - создать задачу и поставить в очередь.
+- `GET /api/jobs` - список всех задач.
+- `GET /api/jobs/{job_id}` - данные одной задачи.
+- `DELETE /api/jobs/{job_id}` - удалить задачу (для running помечает cancel и удаляет из менеджера).
+- `GET /api/jobs/{job_id}/clips` - клипы конкретной задачи.
+
+Пример тела для `POST /api/jobs`:
+
+```json
+{
+  "channels": ["MrBeast", "@veritasium"],
+  "num_clips": 1,
+  "videos_per_channel": 2,
+  "min_clip_duration": 40,
+  "max_clip_duration": 65,
+  "channels_limit": 2
+}
+```
+
+### Clips
+
+- `GET /api/clips/{clip_id}/download` - скачать/проиграть `mp4`.
+- `GET /api/clips/{clip_id}/thumbnail` - получить `jpg` миниатюру.
+
+### Config
+
+- `GET /api/config` - текущий `config.yaml`.
+- `PUT /api/config` - частичное обновление конфига (deep merge).
+
+Ограничение: если есть активная задача, `PUT /api/config` вернет `409`.
+
+---
+
+## WebSocket API
+
+- `WS /ws/jobs/{job_id}`
+
+События:
+
+- `{"type":"log","level":"INFO","message":"..."}`
+- `{"type":"progress","value":50}`
+- `{"type":"status","status":"running|completed|failed|cancelled"}`
+- `{"type":"ping"}`
+
+При подключении клиент получает буфер последних логов и актуальные статус/прогресс.
+
+---
+
+## Структура репозитория
+
+```text
+.
+|-- backend/
+|   |-- app/
+|   |   |-- api/
+|   |   |-- core/
+|   |   `-- models/
+|   |-- main.py
+|   `-- requirements.txt
+|-- frontend/
+|   |-- src/
+|   |-- package.json
+|   `-- vite.config.ts
+|-- config.yaml
+|-- core/
+|-- processing/
+|-- utils/
+`-- output/
+```
+
+---
+
+## Поток работы
+
+1. Пользователь создает задачу в UI (`POST /api/jobs`).
+2. Backend ставит задачу в очередь и запускает пайплайн в фоне.
+3. Страница `JobDetail` получает live-логи/прогресс по WebSocket.
+4. После завершения API возвращает список клипов и ссылки на файл/миниатюру.
+5. Результаты доступны в UI и на файловой системе в `output/`.
+
+---
+
+## Полезно знать
+
+- Текущее состояние задач хранится в памяти процесса backend (не в БД).
+- Выходные артефакты могут занимать много места (`output/`).
+- Для локальной разработки backend и frontend запускаются отдельно.
