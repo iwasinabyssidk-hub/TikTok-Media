@@ -126,6 +126,10 @@ class YouTubeSource:
             "writeinfojson": bool(self.youtube_config.get("write_info_json", True)),
             "subtitleslangs": ["ru", "ru-orig", "en", "en-orig"],
             "ignoreerrors": False,
+            "retries": 10,
+            "fragment_retries": 10,
+            "http_chunk_size": 10485760,
+            "legacy_server_connect": True,
         }
         if ffmpeg_path and ffmpeg_path != "ffmpeg":
             ydl_opts["ffmpeg_location"] = ffmpeg_path

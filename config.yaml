@@ -169,7 +169,7 @@ youtube:
   random_candidate_pool_min_size: 8
   random_seed: null
   search_prefix: "ytsearch"
-  target_height: 1080
+  target_height: 720
   language_priority:
     - "en"
     - "ru"
